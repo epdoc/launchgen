@@ -4,11 +4,11 @@ import * as dfs from 'jsr:@std/fs';
 import os from 'node:os';
 import path from 'node:path';
 
+console.log(green('Executing launchgen.ts'));
+
 const HOME = os.userInfo().homedir;
 const VSCODE = '.vscode';
 const LAUNCH_DEFAULT = { version: '0.2.0', configurations: [] };
-
-console.log('args:', Deno.args);
 
 type LaunchConfig = Dict & {
   request: 'launch';
@@ -38,7 +38,6 @@ console.log(green('Project root:'), projectRoot);
 
 const denoFile = path.resolve(projectRoot, 'deno.json');
 const launchfile = path.resolve(projectRoot, '.vscode', 'launch.json');
-console.log(green('launch.json:'), launchfile);
 
 // Read deno.json
 const data0 = await Deno.readTextFile(denoFile);
@@ -56,19 +55,22 @@ try {
 launchCode.configurations = launchCode.configurations.filter((item) => {
   return !isGenerated(item);
 });
+console.log(
+  green('Retaining'),
+  white(String(launchCode.configurations.length)),
+  green('configurations from existing launch.json')
+);
 
 if (Array.isArray(pkg.workspace)) {
   await Promise.all(
     pkg.workspace.map(async (scope: string) => {
-      for await (
-        const entry of dfs.walk(path.resolve(projectRoot, scope), {
-          match: [/test\.ts$/],
-        })
-      ) {
+      for await (const entry of dfs.walk(path.resolve(projectRoot, scope), {
+        match: [/test\.ts$/],
+      })) {
         entry.name = `${scope}/${entry.name}`;
         addTest(entry);
       }
-    }),
+    })
   );
 } else {
   for await (const entry of Deno.readDir(path.resolve(projectRoot))) {

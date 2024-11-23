@@ -11,6 +11,9 @@
     "@std/fmt": "jsr:@std/fmt@^1.0.3",
     "@std/fs": "jsr:@std/fs@^1.0.6"
   },
+  "exports": {
+    ".": "./launchgen.ts"
+  },
   "fmt": {
     "singleQuote": true,
     "lineWidth": 120

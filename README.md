@@ -11,15 +11,19 @@ configurations for each test file found. Supports monorepos.
 
 ## Usage
 
+```ts
+cd MYFOLDER
+git clone git@github.com:epdoc/launchgen.git
+export PATH=$PATH:MYFOLDER/launchgen
+launchgen.ts -RW
 ```
+
+Or
+
+```ts
 deno run -RWES launchgen.ts -RW
 ```
 
-Or add launchgen.ts to your path and run it directly.
-
-```
-launchgen.ts -RW
-```
 
 ## Options
 
@@ -37,6 +41,8 @@ examples, the `-RW` argument is passed to the deno test command.
 
 - The generated configurations have a UNIT_TEST environment variable set to 1,
   and only these configurations will be updated.
+
+- Optionally add the path to the launchgen.ts executable to your PATH environment variable.
 
 ## License
 
