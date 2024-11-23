@@ -1,0 +1,15 @@
+{
+  "author": {
+    "name": "James Pravetz",
+    "email": "jpravetz@epdoc.com"
+  },
+  "license": "MIT",
+  "imports": {
+    "@std/fmt": "jsr:@std/fmt@^1.0.3",
+    "@std/fs": "jsr:@std/fs@^1.0.6"
+  },
+  "fmt": {
+    "singleQuote": true,
+    "lineWidth": 120
+  }
+}
