@@ -10,20 +10,22 @@ const HOME = os.userInfo().homedir;
 const VSCODE = '.vscode';
 const LAUNCH_DEFAULT = { version: '0.2.0', configurations: [] };
 
-type LaunchConfig = Dict & {
+type Configuration = Record<string, number | string | string[] | Record<string, string>>;
+
+type LaunchTemplate = Dict & {
   request: 'launch';
   env: Dict;
   runtimeArgs: string[];
 };
 
-const template: LaunchConfig = {
+const template: LaunchTemplate = {
+  type: 'node',
   request: 'launch',
   name: 'Debug tests',
-  type: 'node',
   cwd: '${workspaceFolder}',
   env: { UNIT_TEST: '1' },
   runtimeExecutable: `${HOME}/.deno/bin/deno`,
-  runtimeArgs: ['test', '--inspect-brk'],
+  runtimeArgs: ['test', '--inspect-brk', '-A'],
   attachSimplePort: 9229,
 };
 
@@ -38,20 +40,31 @@ console.log(green('Project root:'), projectRoot);
 
 const denoFile = path.resolve(projectRoot, 'deno.json');
 const launchfile = path.resolve(projectRoot, '.vscode', 'launch.json');
+const configfile = path.resolve(projectRoot, 'launch_config.json');
 
 // Read deno.json
 const data0 = await Deno.readTextFile(denoFile);
 const pkg = JSON.parse(data0);
 
-let launchCode = LAUNCH_DEFAULT;
-
 // Read launch.json
+let launchCode = LAUNCH_DEFAULT;
 try {
   const data1 = await Deno.readTextFile(launchfile);
   launchCode = JSON.parse(data1);
 } catch (_err) {
   launchCode = LAUNCH_DEFAULT;
 }
+
+// Read launch_config.json
+let launchConfig: LaunchConfig = {};
+try {
+  const config = await Deno.readTextFile(configfile);
+  launchConfig = JSON.parse(config);
+} catch (_err) {
+  launchConfig = {};
+}
+
+// Any entries in launch.json that were not auto-generated should be retained
 launchCode.configurations = launchCode.configurations.filter((item) => {
   return !isGenerated(item);
 });
@@ -61,6 +74,7 @@ console.log(
   green('configurations from existing launch.json')
 );
 
+// Add launch scripts for all local test files
 if (Array.isArray(pkg.workspace)) {
   await Promise.all(
     pkg.workspace.map(async (scope: string) => {
@@ -77,6 +91,37 @@ if (Array.isArray(pkg.workspace)) {
     (entry as dfs.WalkEntry).path = path.resolve(projectRoot, entry.name);
     addTest(entry as dfs.WalkEntry);
   }
+}
+
+// Add entries for all custom entries in launchConfig
+if (Array.isArray(launchConfig.groups)) {
+  launchConfig.groups.forEach((group: LaunchGroup) => {
+    group.scripts.forEach((script: string | string[]) => {
+      const name = Array.isArray(script) ? script.join(' ') : script;
+      console.log(green('  Adding'), name);
+      const entry: Configuration = {
+        type: 'node',
+        request: 'launch',
+        name: `${group.program} ${name}`,
+        // skipFiles: ['<node_internals>/**'],
+        program: '${workspaceFolder}/' + group.program,
+        cwd: '${workspaceFolder}',
+        env: { UNIT_TEST: '1' },
+        runtimeExecutable: `${HOME}/.deno/bin/deno`,
+        runtimeArgs: group.runtimeArgs,
+        // .concat('--config', '/Users/jpravetz/dev/epdoc/fincp/config/project.settings.json'),
+        attachSimplePort: 9229,
+      };
+      const argLog = Array.isArray(group.scriptArgs) ? group.scriptArgs : [];
+      if (Array.isArray(script)) {
+        entry.args = [...argLog, ...script];
+      } else {
+        entry.args = [...argLog, ...script.split(/\s+/)];
+      }
+
+      launchCode.configurations.push(entry as never);
+    });
+  });
 }
 
 Deno.writeTextFileSync(launchfile, JSON.stringify(launchCode, null, 2));
@@ -113,29 +158,19 @@ async function findRoot(cwd: string, levels: number = 2): Promise<string | undef
   }
 }
 
-function isGenerated(config: LaunchConfig): boolean {
+function isGenerated(config: LaunchTemplate): boolean {
   return config && config.env && config.env['UNIT_TEST'] ? true : false;
 }
 
-export type Dict = { [key: string]: unknown };
+type Dict = { [key: string]: unknown };
 
-// function isDict(val: unknown): val is Dict {
-//   if (!isObject(val)) {
-//     return false;
-//   }
-//   return true;
-// }
+type LaunchConfig = {
+  groups?: LaunchGroup[];
+};
 
-// function isObject(val: unknown): val is object {
-//   return (
-//     hasValue(val) &&
-//     typeof val === 'object' &&
-//     !Array.isArray(val) &&
-//     !(val instanceof Date) &&
-//     !(val instanceof RegExp)
-//   );
-// }
-
-// export function hasValue(val: unknown): boolean {
-//   return val !== null && val !== undefined;
-// }
+type LaunchGroup = {
+  program: string;
+  runtimeArgs: string[];
+  scriptArgs?: string;
+  scripts: (string | string[])[];
+};
