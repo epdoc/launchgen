@@ -87,10 +87,17 @@ if (Array.isArray(pkg.workspace)) {
     })
   );
 } else {
-  for await (const entry of Deno.readDir(path.resolve(projectRoot))) {
-    (entry as dfs.WalkEntry).path = path.resolve(projectRoot, entry.name);
-    addTest(entry as dfs.WalkEntry);
+  for await (const entry of dfs.walk(path.resolve(projectRoot), {
+    match: [/test\.ts$/],
+  })) {
+    entry.name = `${entry.name}`;
+    addTest(entry);
   }
+
+  // for await (const entry of Deno.readDir(path.resolve(projectRoot))) {
+  //   (entry as dfs.WalkEntry).path = path.resolve(projectRoot, entry.name);
+  //   addTest(entry as dfs.WalkEntry);
+  // }
 }
 
 // Add entries for all custom entries in launchConfig
