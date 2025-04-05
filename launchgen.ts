@@ -118,7 +118,7 @@ if (Array.isArray(pkg.workspace)) {
   await Promise.all(
     pkg.workspace.map(async (scope: string) => {
       for await (const entry of dfs.walk(path.resolve(projectRoot, scope), {
-        match: [/(test|run)\.ts$/],
+        match: [/\.(test|run)\.ts$/],
       })) {
         entry.name = `${scope}/${entry.name}`;
         additions.push(entry);
@@ -127,7 +127,7 @@ if (Array.isArray(pkg.workspace)) {
   );
 } else {
   for await (const entry of dfs.walk(path.resolve(projectRoot), {
-    match: [/(test|run)\.ts$/],
+    match: [/\.(test|run)\.ts$/],
   })) {
     entry.name = `${entry.name}`;
     additions.push(entry);
@@ -182,7 +182,7 @@ Deno.writeTextFileSync(launchfile, JSON.stringify(launchCode, null, 2));
 console.log(green('Updated'), launchfile);
 
 function addTest(entry: dfs.WalkEntry) {
-  if (entry.isFile && (entry.name.endsWith('test.ts') || entry.name.endsWith('run.ts'))) {
+  if (entry.isFile && (entry.name.endsWith('.test.ts') || entry.name.endsWith('.run.ts'))) {
     console.log(green('  Adding'), name, entry.name, gray(entry.path));
     const item = Object.assign({}, template, { name: `Debug ${entry.name}` });
     item.runtimeArgs = [];

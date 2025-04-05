@@ -5,6 +5,8 @@ Generate or update a `launch.json` file for use with VSCode.
 Execute from within your project folder. Walks the project folder and adds configurations for each test file found.
 Supports monorepos.
 
+Any files ending with `test.ts` or `.run.ts` will be added to `launch.json`.
+
 ## Requirements
 
 - Deno 2.1.1 or later
