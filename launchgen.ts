@@ -22,8 +22,9 @@ const template: LaunchSpecConfig = {
   cwd: '${workspaceFolder}',
   env: { UNIT_TEST: '1' },
   runtimeExecutable: `${HOME}/.deno/bin/deno`,
-  runtimeArgs: ['test', '--inspect-brk', '-A'],
+  runtimeArgs: ['test', '--inspect-brk'],
   attachSimplePort: 9229,
+  console: 'integratedTerminal',
 };
 
 /**
