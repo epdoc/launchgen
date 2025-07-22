@@ -148,12 +148,16 @@ export class LaunchGenerator {
   protected async addWorkspaceFiles(): Promise<void> {
     const additions: dfs.WalkEntry[] = [];
     const tests = (this.#projectConfig as DenoJson).tests;
-    const workspaces = tests?.include || (this.#projectConfig as DenoJson).workspace ||
+    const workspaces = (this.#projectConfig as DenoJson).workspace ||
       (this.#projectConfig as PackageJson).workspaces || ['./'];
+    const include = tests?.include || ['**/*'];
     const exclude = tests?.exclude || [];
     exclude.push('**/.*');
+    const includeRegex = include.map((pattern) => {
+      return globToRegExp(path.resolve(this.#projectRoot, pattern), { globstar: true });
+    });
     const excludeRegex = exclude.map((pattern) => {
-      return globToRegExp(path.resolve(this.#projectRoot, pattern));
+      return globToRegExp(path.resolve(this.#projectRoot, pattern), { globstar: true });
     });
 
     if (Array.isArray(workspaces)) {
@@ -161,12 +165,14 @@ export class LaunchGenerator {
         workspaces.map(async (scope: string) => {
           for await (
             const entry of dfs.walk(path.resolve(this.#projectRoot, scope), {
-              match: [/\.(test|run)\.(ts|js)$/],
+              match: includeRegex,
               skip: excludeRegex,
             })
           ) {
-            entry.name = path.join(scope, entry.name);
-            additions.push(entry);
+            if (entry.isFile && /\.(test|run)\.(ts|js)$/.test(entry.name)) {
+              entry.name = path.relative(this.#projectRoot, entry.path);
+              additions.push(entry);
+            }
           }
         }),
       );

@@ -80,7 +80,7 @@ Deno.test('LaunchGenerator with include/exclude', async (t) => {
 
   const denoJson = {
     tests: {
-      include: ['src'],
+      include: ['src/**/*.ts'],
       exclude: ['src/ignore'],
     },
   };
