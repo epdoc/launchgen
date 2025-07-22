@@ -56,6 +56,9 @@ type PackageJson = {
 type LaunchConfig = {
   port?: number;
   console?: string;
+  tests?: {
+    runtimeArgs?: string[];
+  };
   groups?: LaunchConfigGroup[];
 };
 
@@ -231,13 +234,19 @@ export class LaunchGenerator {
   protected addTest(entry: dfs.WalkEntry): void {
     if (entry.isFile) {
       console.log(green('  Adding'), entry.name, gray(entry.path));
+      const runtimeArgs = this.#runtime === 'deno'
+        ? ['test', '--inspect-brk', '-A', entry.path]
+        : [entry.path];
+      if (this.#launchConfig.tests?.runtimeArgs) {
+        runtimeArgs.push(...this.#launchConfig.tests.runtimeArgs);
+      }
       const item: LaunchSpecConfig = {
         type: 'node',
         request: 'launch',
         name: `Debug ${entry.name}`,
         cwd: '${workspaceFolder}',
         runtimeExecutable: this.#runtime,
-        runtimeArgs: this.#runtime === 'deno' ? ['test', '--inspect-brk', '-A', entry.path] : [entry.path],
+        runtimeArgs,
         attachSimplePort: this.#launchConfig.port || 9229,
         console: this.#launchConfig.console || 'integratedTerminal',
         env: { LAUNCHGEN: 'true' },

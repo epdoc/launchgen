@@ -1,3 +1,9 @@
+### Version 0.7.0 Changes
+
+- **Custom Runtime Arguments:** You can now add custom runtime arguments to all auto-discovered test files by adding a `tests.runtimeArgs` property to your `launch.config.json` file. These arguments are appended to the default runtime arguments.
+- **Improved Documentation:** The `README.md` has been updated to clarify the use of `deno.json` and `launch.config.json`, and to provide a clearer explanation of how launch configurations are generated.
+- **Enhanced Unit Tests:** The unit tests have been refactored for better clarity and maintainability, and a new test has been added to verify the custom runtime arguments functionality.
+
 ### Version 0.6.0 Changes
 
 - **Test File Filtering:** You can now control which files are included and excluded from the test search by adding a
