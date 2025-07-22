@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -RWES
-import { gray, green, red, white } from 'jsr:@std/fmt/colors';
-import * as dfs from 'jsr:@std/fs';
-import { globToRegExp } from 'jsr:@std/path/glob-to-regexp';
+import { gray, green, red, white } from 'jsr:@std/fmt@^1.0.8/colors';
+import * as dfs from 'jsr:@std/fs@^1.0.19';
+import { globToRegExp } from 'jsr:@std/path@^1.1.1/glob-to-regexp';
 import path from 'node:path';
 
 /**
