@@ -131,3 +131,22 @@ Deno.test('LaunchGenerator with custom runtime args', async (t) => {
     assertEquals(launchJson.configurations[0].runtimeArgs, ['test', '--inspect-brk', '-A', testFilePath, '--check']);
   });
 });
+
+Deno.test('LaunchGenerator with duplicate runtime args', async (t) => {
+  const projectRoot = await setupTest(['my.test.ts'], { tests: { runtimeArgs: ['-A'] } }, { workspace: ['./'] });
+
+  await t.step('should inform user of duplicate runtime args', async () => {
+    const generator = new LaunchGenerator(projectRoot);
+    const consoleLog: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args) => {
+      consoleLog.push(args.join(' '));
+    };
+
+    await generator.run();
+
+    console.log = originalLog;
+
+    assertEquals(consoleLog.some((line) => line.includes('Info: runtimeArg "-A" is already in the default list')), true);
+  });
+});

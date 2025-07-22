@@ -234,10 +234,16 @@ export class LaunchGenerator {
   protected addTest(entry: dfs.WalkEntry): void {
     if (entry.isFile) {
       console.log(green('  Adding'), entry.name, gray(entry.path));
-      const runtimeArgs = this.#runtime === 'deno'
-        ? ['test', '--inspect-brk', '-A', entry.path]
-        : [entry.path];
+      const defaultArgs = this.#runtime === 'deno'
+        ? ['test', '--inspect-brk', '-A']
+        : [];
+      const runtimeArgs = [...defaultArgs, entry.path];
       if (this.#launchConfig.tests?.runtimeArgs) {
+        this.#launchConfig.tests.runtimeArgs.forEach((arg) => {
+          if (defaultArgs.includes(arg)) {
+            console.log(gray(`  Info: runtimeArg "${arg}" is already in the default list`));
+          }
+        });
         runtimeArgs.push(...this.#launchConfig.tests.runtimeArgs);
       }
       const item: LaunchSpecConfig = {
