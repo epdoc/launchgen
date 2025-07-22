@@ -58,7 +58,7 @@ for more advanced configurations.
 
 ### `deno.json`
 
-You can control which files are included and excluded from the test search by adding a `tests` object to your
+You can control which files are included and excluded from the test search by usig the `tests` object in your
 `deno.json` file.
 
 **Example `deno.json`:**
@@ -143,10 +143,11 @@ This allows you to customize the behavior of the script to fit your specific nee
 ## How it Works
 
 - The script starts by looking for a `.vscode` folder to find the project root.
-- It then checks for the presence of `deno.json` or `package.json` to determine the runtime.
+- It then checks for the presence of `deno.json` or `package.json` to determine the runtime and read the `tests` entry.
 - It reads the existing `launch.json` file (if it exists) and filters out any configurations that have an environment
   variable `LAUNCHGEN` set to `"true"`.
-- It walks the workspace directories and adds launch configurations for any test or run files it finds.
+- It walks the workspace directories, adhering to the `tests` entries in `deno.json` if present, and adds launch
+  configurations for any test or run files it finds.
 - It reads the `launch.config.json` file (if it exists) and adds any custom launch configurations.
 - Finally, it writes the updated configurations back to the `launch.json` file.
 
