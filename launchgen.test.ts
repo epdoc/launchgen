@@ -72,3 +72,46 @@ Deno.test('LaunchGenerator for Node', async (t) => {
     assertEquals(launchJson.configurations[0].env.LAUNCHGEN, 'true');
   });
 });
+
+Deno.test('LaunchGenerator with include/exclude', async (t) => {
+  const projectRoot = await Deno.makeTempDir();
+  const vscodeDir = path.join(projectRoot, '.vscode');
+  await Deno.mkdir(vscodeDir);
+
+  const denoJson = {
+    tests: {
+      include: ['src'],
+      exclude: ['src/ignore'],
+    },
+  };
+  const denoJsonPath = path.join(projectRoot, 'deno.json');
+  await Deno.writeTextFile(denoJsonPath, JSON.stringify(denoJson));
+
+  // Create files and directories
+  const srcDir = path.join(projectRoot, 'src');
+  await Deno.mkdir(srcDir);
+  const ignoreDir = path.join(srcDir, 'ignore');
+  await Deno.mkdir(ignoreDir);
+  const hiddenDir = path.join(projectRoot, '.hidden');
+  await Deno.mkdir(hiddenDir);
+  const notIncludedDir = path.join(projectRoot, 'not_included');
+  await Deno.mkdir(notIncludedDir);
+
+  // Create test files
+  await Deno.writeTextFile(path.join(srcDir, 'my.test.ts'), '// test');
+  await Deno.writeTextFile(path.join(ignoreDir, 'ignore.test.ts'), '// test');
+  await Deno.writeTextFile(path.join(hiddenDir, 'hidden.test.ts'), '// test');
+  await Deno.writeTextFile(path.join(notIncludedDir, 'not_included.test.ts'), '// test');
+
+  await t.step('should only include specified files', async () => {
+    const generator = new LaunchGenerator(projectRoot);
+    await generator.run();
+
+    const launchJsonPath = path.join(vscodeDir, 'launch.json');
+    const launchJsonContent = await Deno.readTextFile(launchJsonPath);
+    const launchJson = JSON.parse(launchJsonContent);
+
+    assertEquals(launchJson.configurations.length, 1);
+    assertEquals(launchJson.configurations[0].name, 'Debug src/my.test.ts');
+  });
+});

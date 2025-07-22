@@ -49,6 +49,24 @@ await generator.run();
 
 The script works out of the box for most projects, but you can create a `launch.config.json` file in your project root for more advanced configurations.
 
+### `deno.json`
+
+You can control which files are included and excluded from the test search by adding a `tests` object to your `deno.json` file.
+
+**Example `deno.json`:**
+
+```json
+{
+  "tests": {
+    "include": ["src", "tests"],
+    "exclude": ["src/ignore", "tests/data"]
+  }
+}
+```
+
+- `tests.include`: An array of paths to include in the search for test files. If not specified, the script will use the `workspace` or `workspaces` property, or default to the project root.
+- `tests.exclude`: An array of paths to exclude from the search. These can be files or directories, and glob patterns are supported. By default, all hidden files and directories (those starting with a `.`) are excluded.
+
 ### `launch.config.json`
 
 This file allows you to define custom launch configuration groups and global settings.

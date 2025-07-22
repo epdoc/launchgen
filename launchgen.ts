@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -RWES
 import { gray, green, red, white } from 'jsr:@std/fmt/colors';
 import * as dfs from 'jsr:@std/fs';
+import { globToRegExp } from 'jsr:@std/path/glob-to-regexp';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -43,6 +44,10 @@ type LaunchSpec = {
 
 type DenoJson = {
   workspace?: string[];
+  tests?: {
+    include?: string[];
+    exclude?: string[];
+  };
 };
 
 type PackageJson = {
@@ -142,8 +147,14 @@ export class LaunchGenerator {
 
   protected async addWorkspaceFiles(): Promise<void> {
     const additions: dfs.WalkEntry[] = [];
-    const workspaces = (this.#projectConfig as DenoJson).workspace ||
+    const tests = (this.#projectConfig as DenoJson).tests;
+    const workspaces = tests?.include || (this.#projectConfig as DenoJson).workspace ||
       (this.#projectConfig as PackageJson).workspaces || ['./'];
+    const exclude = tests?.exclude || [];
+    exclude.push('**/.*');
+    const excludeRegex = exclude.map((pattern) => {
+      return globToRegExp(path.resolve(this.#projectRoot, pattern));
+    });
 
     if (Array.isArray(workspaces)) {
       await Promise.all(
@@ -151,6 +162,7 @@ export class LaunchGenerator {
           for await (
             const entry of dfs.walk(path.resolve(this.#projectRoot, scope), {
               match: [/\.(test|run)\.(ts|js)$/],
+              skip: excludeRegex,
             })
           ) {
             entry.name = path.join(scope, entry.name);
