@@ -2,7 +2,6 @@
 import { gray, green, red, white } from 'jsr:@std/fmt/colors';
 import * as dfs from 'jsr:@std/fs';
 import { globToRegExp } from 'jsr:@std/path/glob-to-regexp';
-import os from 'node:os';
 import path from 'node:path';
 
 /**
@@ -238,9 +237,7 @@ export class LaunchGenerator {
         name: `Debug ${entry.name}`,
         cwd: '${workspaceFolder}',
         runtimeExecutable: this.#runtime,
-        runtimeArgs: this.#runtime === 'deno'
-          ? ['test', '--inspect-brk', '-A', entry.path]
-          : [entry.path],
+        runtimeArgs: this.#runtime === 'deno' ? ['test', '--inspect-brk', '-A', entry.path] : [entry.path],
         attachSimplePort: this.#launchConfig.port || 9229,
         console: this.#launchConfig.console || 'integratedTerminal',
         env: { LAUNCHGEN: 'true' },

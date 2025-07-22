@@ -6,10 +6,11 @@
     "name": "James Pravetz",
     "email": "jpravetz@epdoc.com"
   },
+  "tasks": {
+    "test": "deno test -RWES"
+  },
   "license": "MIT",
   "imports": {
-    "@std/fmt": "jsr:@std/fmt@^1.0.3",
-    "@std/fs": "jsr:@std/fs@^1.0.6"
   },
   "exports": {
     ".": "./launchgen.ts"

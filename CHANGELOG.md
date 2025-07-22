@@ -1,7 +1,9 @@
 ### Version 0.6.0 Changes
 
-- **Test File Filtering:** You can now control which files are included and excluded from the test search by adding a `tests` object to your `deno.json` file. See the `README.md` for more details.
-- **Hidden File Exclusion:** By default, all hidden files and directories (those starting with a `.`) are now excluded from the test search.
+- **Test File Filtering:** You can now control which files are included and excluded from the test search by adding a
+  `tests` object to your `deno.json` file. See the `README.md` for more details.
+- **Hidden File Exclusion:** By default, all hidden files and directories (those starting with a `.`) are now excluded
+  from the test search.
 
 ### Version 0.5.0 Changes
 
