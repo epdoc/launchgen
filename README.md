@@ -20,6 +20,7 @@ projects, automatically detecting the runtime and generating the appropriate lau
 
 - Deno 1.0+ or Node.js 12+
 - A VSCode project (`.vscode` folder in the project root).
+- Use of `deno.json` or `project.json` files. JSONC is not supported.
 
 ## Usage
 
@@ -79,7 +80,8 @@ You can control which files are included and excluded from the test search by us
 
 ### `launch.config.json`
 
-This file allows you to define global settings, custom arguments for auto-discovered tests, and custom launch configuration groups.
+This file allows you to define global settings, custom arguments for auto-discovered tests, and custom launch
+configuration groups.
 
 **Example `launch.config.json`:**
 
@@ -108,15 +110,19 @@ This file allows you to define global settings, custom arguments for auto-discov
 **Global Settings:**
 
 - `port`: The port to use for debugging. Defaults to `9229`.
-- `console`: The type of console to use. Can be `internalConsole`, `integratedTerminal`, or `externalTerminal`. Defaults to `integratedTerminal`.
+- `console`: The type of console to use. Can be `internalConsole`, `integratedTerminal`, or `externalTerminal`. Defaults
+  to `integratedTerminal`.
 
 **Auto-Discovered Test Settings (`tests`):**
 
-- `runtimeArgs`: An array of arguments to be passed to the runtime for all auto-discovered test files. These arguments are appended to the default arguments. This is useful for applying a consistent set of flags (e.g., `--check`) across all your tests.
+- `runtimeArgs`: An array of arguments to be passed to the runtime for all auto-discovered test files. These arguments
+  are appended to the default arguments. This is useful for applying a consistent set of flags (e.g., `--check`) across
+  all your tests.
 
 **Custom Group Settings (`groups`):**
 
-Use groups when you need to manually define a launch configuration for a specific executable or create multiple launch configurations for a single script with different arguments.
+Use groups when you need to manually define a launch configuration for a specific executable or create multiple launch
+configurations for a single script with different arguments.
 
 - `program`: The path to the script to be executed.
 - `runtimeArgs`: An array of arguments to be passed to the runtime (`deno` or `node`). For Deno, this is where you would
@@ -127,12 +133,15 @@ Use groups when you need to manually define a launch configuration for a specifi
 
 ### Default Arguments
 
-The final `runtimeArgs` for an auto-discovered test file is a combination of the script-specific defaults and the global arguments defined in `launch.config.json`.
+The final `runtimeArgs` for an auto-discovered test file is a combination of the script-specific defaults and the global
+arguments defined in `launch.config.json`.
 
 The arguments from `tests.runtimeArgs` are always added after the default arguments.
 
-- **Deno:** When a `*.test.ts` or `*.run.ts` file is found, the script will generate a launch configuration with `runtimeArgs` set to `["test", "--inspect-brk", "-A", "<path_to_file>", ...tests.runtimeArgs]`.
-- **Node.js:** When a `*.test.js` or `*.run.js` file is found, the script will generate a launch configuration with `runtimeArgs` set to `["<path_to_file>", ...tests.runtimeArgs]`.
+- **Deno:** When a `*.test.ts` or `*.run.ts` file is found, the script will generate a launch configuration with
+  `runtimeArgs` set to `["test", "--inspect-brk", "-A", "<path_to_file>", ...tests.runtimeArgs]`.
+- **Node.js:** When a `*.test.js` or `*.run.js` file is found, the script will generate a launch configuration with
+  `runtimeArgs` set to `["<path_to_file>", ...tests.runtimeArgs]`.
 
 ## Extending Launchgen
 
@@ -156,7 +165,8 @@ This allows you to customize the behavior of the script to fit your specific nee
 - It then checks for the presence of `deno.json` or `package.json` to determine the runtime.
 - It reads configuration from `deno.json`, `package.json`, and `launch.config.json` (if they exist).
 - It reads the existing `launch.json` file (if it exists) and filters out any previously generated configurations.
-- It walks the workspace directories, adhering to the `tests` entries in `deno.json`, and adds launch configurations for any test or run files it finds. Any global test arguments from `launch.config.json` are applied here.
+- It walks the workspace directories, adhering to the `tests` entries in `deno.json`, and adds launch configurations for
+  any test or run files it finds. Any global test arguments from `launch.config.json` are applied here.
 - It adds any custom launch configurations defined in the `groups` section of `launch.config.json`.
 - Finally, it writes the updated configurations back to the `launch.json` file.
 
