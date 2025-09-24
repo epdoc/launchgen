@@ -200,6 +200,7 @@ export class LaunchGenerator {
     }
 
     console.log(green('Adding'), white(String(additions.length)), green('test files'));
+    additions.sort((a, b) => a.path.localeCompare(b.path));
     additions.forEach((entry) => {
       this.addTest(entry);
     });
