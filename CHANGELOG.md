@@ -4,10 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.7.2] - 2025-09-24
 
-- Added install script and updated README.md.
-
-## [0.7.1] - 2025-09-24
-
+- Added install script and updated [README.md](./README.md).
 - Added package wildcard support.
 
 ## [0.7.0]
