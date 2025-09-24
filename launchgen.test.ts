@@ -1,6 +1,6 @@
-import { assertEquals } from 'jsr:@std/assert/equals';
-import { LaunchGenerator } from './launchgen.ts';
+import { assertEquals } from '@std/assert/equals';
 import * as path from 'node:path';
+import { LaunchGenerator } from './launchgen.ts';
 
 async function setupTest(files: string[], config?: object, denoJson?: object) {
   const projectRoot = await Deno.makeTempDir();
@@ -93,12 +93,16 @@ Deno.test('LaunchGenerator with include/exclude', async (t) => {
       exclude: ['src/ignore'],
     },
   };
-  const projectRoot = await setupTest([
-    'src/my.test.ts',
-    'src/ignore/ignore.test.ts',
-    '.hidden/hidden.test.ts',
-    'not_included/not_included.test.ts',
-  ], undefined, denoJson);
+  const projectRoot = await setupTest(
+    [
+      'src/my.test.ts',
+      'src/ignore/ignore.test.ts',
+      '.hidden/hidden.test.ts',
+      'not_included/not_included.test.ts',
+    ],
+    undefined,
+    denoJson,
+  );
   const vscodeDir = path.join(projectRoot, '.vscode');
 
   await t.step('should only include specified files', async () => {
@@ -147,6 +151,91 @@ Deno.test('LaunchGenerator with duplicate runtime args', async (t) => {
 
     console.log = originalLog;
 
-    assertEquals(consoleLog.some((line) => line.includes('Info: runtimeArg "-A" is already in the default list')), true);
+    assertEquals(
+      consoleLog.some((line) => line.includes('Info: runtimeArg "-A" is already in the default list')),
+      true,
+    );
+  });
+});
+
+Deno.test('LaunchGenerator with workspace glob', async (t) => {
+  const denoJson = {
+    workspace: ['packages/*'],
+  };
+  const projectRoot = await setupTest(
+    [],
+    undefined,
+    denoJson,
+  );
+  const vscodeDir = path.join(projectRoot, '.vscode');
+
+  // Create workspace directories
+  const workspace1 = path.join(projectRoot, 'packages', 'workspace1');
+  await Deno.mkdir(workspace1, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace1, 'deno.json'), '{\n  "name": "workspace1"\n}');
+  await Deno.writeTextFile(path.join(workspace1, 'my.test.ts'), '// test file');
+
+  const workspace2 = path.join(projectRoot, 'packages', 'workspace2');
+  await Deno.mkdir(workspace2, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace2, 'deno.json'), '{\n  "name": "workspace2"\n}');
+  await Deno.writeTextFile(path.join(workspace2, 'my.test.ts'), '// test file');
+
+  // This workspace should be ignored because it does not contain a deno.json file
+  const workspace3 = path.join(projectRoot, 'packages', 'workspace3');
+  await Deno.mkdir(workspace3, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace3, 'my.test.ts'), '// test file');
+
+  await t.step('should discover workspaces from glob', async () => {
+    const generator = new LaunchGenerator(projectRoot);
+    await generator.run();
+
+    const launchJsonPath = path.join(vscodeDir, 'launch.json');
+    const launchJsonContent = await Deno.readTextFile(launchJsonPath);
+    const launchJson = JSON.parse(launchJsonContent);
+
+    assertEquals(launchJson.configurations.length, 2);
+    assertEquals(launchJson.configurations[0].name, 'Debug packages/workspace1/my.test.ts');
+    assertEquals(launchJson.configurations[1].name, 'Debug packages/workspace2/my.test.ts');
+  });
+});
+
+Deno.test('LaunchGenerator with workspace glob', async (t) => {
+  const denoJson = {
+    workspace: ['packages/*'],
+  };
+  const projectRoot = await setupTest(
+    [],
+    undefined,
+    denoJson,
+  );
+  const vscodeDir = path.join(projectRoot, '.vscode');
+
+  // Create workspace directories
+  const workspace1 = path.join(projectRoot, 'packages', 'workspace1');
+  await Deno.mkdir(workspace1, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace1, 'deno.json'), '{\n  "name": "workspace1"\n}');
+  await Deno.writeTextFile(path.join(workspace1, 'my.test.ts'), '// test file');
+
+  const workspace2 = path.join(projectRoot, 'packages', 'workspace2');
+  await Deno.mkdir(workspace2, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace2, 'deno.json'), '{\n  "name": "workspace2"\n}');
+  await Deno.writeTextFile(path.join(workspace2, 'my.test.ts'), '// test file');
+
+  // This workspace should be ignored because it does not contain a deno.json file
+  const workspace3 = path.join(projectRoot, 'packages', 'workspace3');
+  await Deno.mkdir(workspace3, { recursive: true });
+  await Deno.writeTextFile(path.join(workspace3, 'my.test.ts'), '// test file');
+
+  await t.step('should discover workspaces from glob', async () => {
+    const generator = new LaunchGenerator(projectRoot);
+    await generator.run();
+
+    const launchJsonPath = path.join(vscodeDir, 'launch.json');
+    const launchJsonContent = await Deno.readTextFile(launchJsonPath);
+    const launchJson = JSON.parse(launchJsonContent);
+
+    assertEquals(launchJson.configurations.length, 2);
+    assertEquals(launchJson.configurations[0].name, 'Debug packages/workspace1/my.test.ts');
+    assertEquals(launchJson.configurations[1].name, 'Debug packages/workspace2/my.test.ts');
   });
 });

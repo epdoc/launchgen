@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -RWES
-import { gray, green, red, white } from 'jsr:@std/fmt@^1.0.8/colors';
-import * as dfs from 'jsr:@std/fs@^1.0.19';
-import { globToRegExp } from 'jsr:@std/path@^1.1.1/glob-to-regexp';
+import { gray, green, red, white } from '@std/fmt/colors';
+import * as dfs from '@std/fs';
+import { globToRegExp } from '@std/path/glob-to-regexp';
 import path from 'node:path';
 
 /**
@@ -150,7 +150,7 @@ export class LaunchGenerator {
   protected async addWorkspaceFiles(): Promise<void> {
     const additions: dfs.WalkEntry[] = [];
     const tests = (this.#projectConfig as DenoJson).tests;
-    const workspaces = (this.#projectConfig as DenoJson).workspace ||
+    let workspaces = (this.#projectConfig as DenoJson).workspace ||
       (this.#projectConfig as PackageJson).workspaces || ['./'];
     const include = tests?.include || ['**/*'];
     const exclude = tests?.exclude || [];
@@ -163,10 +163,29 @@ export class LaunchGenerator {
     });
 
     if (Array.isArray(workspaces)) {
+      const expandedWorkspaces: string[] = [];
+      for (const scope of workspaces) {
+        if (scope.includes('*')) {
+          for await (const entry of dfs.expandGlob(scope, { root: this.#projectRoot })) {
+            if (entry.isDirectory) {
+              try {
+                await Deno.stat(path.join(entry.path, 'deno.json'));
+                expandedWorkspaces.push(entry.path);
+              } catch (_err) {
+                // Not a workspace, ignore.
+              }
+            }
+          }
+        } else {
+          expandedWorkspaces.push(path.resolve(this.#projectRoot, scope));
+        }
+      }
+      workspaces = expandedWorkspaces;
+
       await Promise.all(
-        workspaces.map(async (scope: string) => {
+        workspaces.map(async (workspacePath: string) => {
           for await (
-            const entry of dfs.walk(path.resolve(this.#projectRoot, scope), {
+            const entry of dfs.walk(workspacePath, {
               match: includeRegex,
               skip: excludeRegex,
             })
@@ -234,9 +253,7 @@ export class LaunchGenerator {
   protected addTest(entry: dfs.WalkEntry): void {
     if (entry.isFile) {
       console.log(green('  Adding'), entry.name, gray(entry.path));
-      const defaultArgs = this.#runtime === 'deno'
-        ? ['test', '--inspect-brk', '-A']
-        : [];
+      const defaultArgs = this.#runtime === 'deno' ? ['test', '--inspect-brk', '-A'] : [];
       const runtimeArgs = [...defaultArgs, entry.path];
       if (this.#launchConfig.tests?.runtimeArgs) {
         this.#launchConfig.tests.runtimeArgs.forEach((arg) => {
