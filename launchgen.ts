@@ -162,6 +162,16 @@ export class LaunchGenerator {
       return globToRegExp(path.resolve(this.#projectRoot, pattern), { globstar: true });
     });
 
+    let workspaceRoot: string | undefined;
+    if (workspaces.length === 1 && workspaces[0].endsWith('/*')) {
+      workspaceRoot = path.dirname(workspaces[0]);
+      if (workspaceRoot === '.') {
+        workspaceRoot = undefined;
+      } else {
+        workspaceRoot = workspaceRoot.replace(/^\.\//, '') + '/';
+      }
+    }
+
     if (Array.isArray(workspaces)) {
       const expandedWorkspaces: string[] = [];
       for (const scope of workspaces) {
@@ -191,7 +201,11 @@ export class LaunchGenerator {
             })
           ) {
             if (entry.isFile && /\.(test|run)\.(ts|js)$/.test(entry.name)) {
-              entry.name = path.relative(this.#projectRoot, entry.path);
+              let relativePath = path.relative(this.#projectRoot, entry.path);
+              if (workspaceRoot && relativePath.startsWith(workspaceRoot)) {
+                relativePath = relativePath.substring(workspaceRoot.length);
+              }
+              entry.name = relativePath;
               additions.push(entry);
             }
           }
