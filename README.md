@@ -5,8 +5,8 @@ projects, automatically detecting the runtime and generating the appropriate lau
 
 ## Features
 
-- **Automatic Runtime Detection:** Detects whether you are using Deno or Node.js based on the presence of `deno.json` or
-  `package.json`.
+- **Automatic Runtime Detection:** Detects whether you are using a Deno or Node.js project, based on the presence of
+  `deno.json` or `package.json`. Note that this script only runs on Deno.
 - **Test File Discovery:** Walks the project folder and adds launch configurations for each test file found. See
   [File Naming Conventions](#file-naming-conventions) for more details.
 - **Customizable Configurations:** Add custom launch configurations using a `launch.config.json` file.
@@ -18,18 +18,42 @@ projects, automatically detecting the runtime and generating the appropriate lau
 
 ## Requirements
 
-- Deno 1.0+ or Node.js 12+
+- Deno 2.4+
 - A VSCode project (`.vscode` folder in the project root).
 - Use of `deno.json` or `project.json` files. JSONC is not supported.
 
+## Installation
+
+First, you need to get the source code. You can either clone the repository or download the source code as a zip file.
+
+```bash
+git clone https://github.com/epdoc/launchgen.git
+cd launchgen
+```
+
+To make the `launchgen` script globally available, you can install it using the following command:
+
+```bash
+deno task install
+```
+
+This will install the script as `launchgen` in your Deno installation's `bin` directory. Make sure that your Deno `bin`
+directory is in your system's `PATH`.
+
 ## Usage
+
+Once installed, you can run the script from anywhere in your terminal:
+
+```bash
+launchgen
+```
 
 ### Direct Execution
 
-Because the script includes a shebang, you can execute it directly from your terminal after making it executable:
+If you prefer not to install the script globally, you can execute it directly from your terminal after making it
+executable:
 
 ```bash
-chmod +x launchgen.ts
 ./launchgen.ts
 ```
 
@@ -190,7 +214,9 @@ This allows you to customize the behavior of the script to fit your specific nee
 - The script starts by looking for a `.vscode` folder to find the project root.
 - It then checks for the presence of `deno.json` or `package.json` to determine the runtime.
 - It reads configuration from `deno.json`, `package.json`, and `launch.config.json` (if they exist).
-- It reads the existing `launch.json` file (if it exists) and filters out any previously generated configurations.
+- It reads the existing `launch.json` file (if it exists) and filters out any previously generated configurations. This
+  is done by checking for the presence of an `env` property with `LAUNCHGEN` set to `'true'`. Any configuration that
+  does not have this property will be preserved.
 - It walks the workspace directories, adhering to the `tests` entries in `deno.json`, and adds launch configurations for
   any test or run files it finds. Any global test arguments from `launch.config.json` are applied here.
 - It adds any custom launch configurations defined in the `groups` section of `launch.config.json`.
