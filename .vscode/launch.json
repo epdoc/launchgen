@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug launchgen.test.ts",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "test",
+        "--inspect-brk",
+        "-A",
+        "/Users/jpravetz/dev/@epdoc/launchgen/launchgen.test.ts"
+      ],
+      "attachSimplePort": 9229,
+      "console": "integratedTerminal",
+      "env": {
+        "LAUNCHGEN": "true"
+      }
+    }
+  ]
+}

@@ -2,14 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.7.3] - 2025-09-24
-
-- Fixed race condition.
-
-## [0.7.2] - 2025-09-24
+## [0.7.4] - 2025-09-24
 
 - Added install script and updated [README.md](./README.md).
-- Added package wildcard support.
+- Added workspace wildcard support.
 
 ## [0.7.0]
 

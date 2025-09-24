@@ -63,6 +63,25 @@ Alternatively, you can use `deno run`:
 deno run -A launchgen.ts
 ```
 
+### VSCode Action Button
+
+Add launchgen as a [VS Code Action Button](https://github.com/SeunLanLege/vscode-action-buttons):
+
+```json
+"actionButtons": {
+  "commands": [
+    {
+      "name": "$(rocket) Launchgen",
+      "command": "/Users/jpravetz/.deno/bin/launchgen",
+      "tooltip": "Run the launchgen script to build a launch.json file",
+      "useVsCodeApi": false,
+      "singleInstance": true,
+      "focus": true
+    }
+  ],
+},
+```
+
 ### As a Module
 
 You can also import the `LaunchGenerator` class into your own scripts to extend its functionality or integrate it into
